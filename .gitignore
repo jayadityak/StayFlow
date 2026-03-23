@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+.DS_Store
+.Rhistory
+*.bak
+*.updated
+~$*
+.vscode/
+.idea/
+*.log
