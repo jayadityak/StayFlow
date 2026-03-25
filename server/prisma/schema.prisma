@@ -1,0 +1,279 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Hotel {
+  id               String    @id @default(cuid())
+  name             String
+  slug             String    @unique
+  email            String    @unique
+  phone            String
+  frontDeskNumber  String?
+  supportEmail     String?
+  address          String?
+  city             String
+  state            String
+  hotelType        String
+  totalRooms       Int
+  checkInTime      String    @default("14:00")
+  checkOutTime     String    @default("12:00")
+  voiceEnabled     Boolean   @default(true)
+  voiceAutoSend    Boolean   @default(false)
+  voiceLanguage    String    @default("en-IN")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  users            User[]
+  rooms            Room[]
+  amenities        Amenity[]
+  services         Service[]
+  menuItems        MenuItem[]
+  guestSessions    GuestSession[]
+  conversations    Conversation[]
+  serviceRequests  ServiceRequest[]
+  orders           Order[]
+  notifications    Notification[]
+  qrScans          QrScan[]
+  feedbacks        GuestFeedback[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  hotelId      String
+  hotel        Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("staff")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  assignedRequests ServiceRequest[]
+}
+
+model Room {
+  id              String   @id @default(cuid())
+  hotelId         String
+  hotel           Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  roomNumber      String
+  roomType        String
+  floor           Int
+  occupancy       Int      @default(2)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  guestSessions   GuestSession[]
+  conversations   Conversation[]
+  serviceRequests ServiceRequest[]
+  orders          Order[]
+
+  @@unique([hotelId, roomNumber])
+}
+
+model Amenity {
+  id          String   @id @default(cuid())
+  hotelId     String
+  hotel       Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  name        String
+  isAvailable Boolean  @default(true)
+  openingTime String?
+  closingTime String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  hotelId     String
+  hotel       Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  name        String
+  isEnabled   Boolean  @default(true)
+  openingTime String?
+  closingTime String?
+  notes       String?
+  isBillable  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model MenuItem {
+  id           String   @id @default(cuid())
+  hotelId      String
+  hotel        Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  name         String
+  category     String
+  description  String?
+  isVegetarian Boolean  @default(false)
+  price        Float
+  isAvailable  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  orderItems   OrderItem[]
+}
+
+model GuestSession {
+  id           String    @id @default(cuid())
+  hotelId      String
+  hotel        Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  roomId       String
+  room         Room      @relation(fields: [roomId], references: [id])
+  guestName    String
+  email        String
+  checkInDate  DateTime
+  checkOutDate DateTime
+  otpVerified       Boolean   @default(false)
+  token             String?   @unique
+  preferredLanguage String    @default("en")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  conversations   Conversation[]
+  serviceRequests ServiceRequest[]
+  orders          Order[]
+  feedbacks       GuestFeedback[]
+}
+
+model Conversation {
+  id             String    @id @default(cuid())
+  hotelId        String
+  hotel          Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  roomId         String
+  room           Room      @relation(fields: [roomId], references: [id])
+  guestSessionId String
+  guestSession   GuestSession @relation(fields: [guestSessionId], references: [id])
+  status         String    @default("active")
+  hasEscalation  Boolean   @default(false)
+  unknownCount   Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  messages       Message[]
+  flowState      ConversationFlowState?
+}
+
+// Persists multi-step chat workflow state so server restarts don't break active flows
+model ConversationFlowState {
+  id             String       @id @default(cuid())
+  conversationId String       @unique
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  type           String       // 'amenity_booking' | 'cancellation' | 'table_booking'
+  data           Json
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("conversation_flow_states")
+}
+
+model Message {
+  id               String    @id @default(cuid())
+  conversationId   String
+  conversation     Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderType       String
+  content          String
+  englishContent   String?   // English version for staff view; null on old messages (fall back to content)
+  originalLanguage String?   // BCP-47 lang code of content; null on old messages (assumed 'en')
+  inputType        String    @default("text")
+  createdAt        DateTime  @default(now())
+}
+
+model ServiceRequest {
+  id             String    @id @default(cuid())
+  hotelId        String
+  hotel          Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  roomId         String
+  room           Room      @relation(fields: [roomId], references: [id])
+  guestSessionId String
+  guestSession   GuestSession @relation(fields: [guestSessionId], references: [id])
+  assignedToId   String?
+  assignedTo     User?     @relation(fields: [assignedToId], references: [id])
+  type           String
+  details        String?
+  status         String    @default("pending")
+  isBillable     Boolean   @default(false)
+  staffNotes     String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Order {
+  id                    String    @id @default(cuid())
+  hotelId               String
+  hotel                 Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  roomId                String
+  room                  Room      @relation(fields: [roomId], references: [id])
+  guestSessionId        String
+  guestSession          GuestSession @relation(fields: [guestSessionId], references: [id])
+  totalAmount           Float
+  status                String    @default("placed")
+  isBillable            Boolean   @default(true)
+  frontDeskAcknowledged Boolean   @default(false)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  items                 OrderItem[]
+}
+
+model OrderItem {
+  id                String    @id @default(cuid())
+  orderId           String
+  order             Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId        String?
+  menuItem          MenuItem? @relation(fields: [menuItemId], references: [id])
+  quantity          Int
+  itemNameSnapshot  String
+  itemPriceSnapshot Float
+  createdAt         DateTime  @default(now())
+}
+
+model Notification {
+  id                String    @id @default(cuid())
+  hotelId           String
+  hotel             Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  type              String
+  title             String
+  body              String
+  isRead            Boolean   @default(false)
+  relatedEntityType String?
+  relatedEntityId   String?
+  createdAt         DateTime  @default(now())
+}
+
+model QrScan {
+  id         String   @id @default(cuid())
+  hotelId    String
+  hotel      Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  scannedAt  DateTime @default(now())
+  source     String?
+  deviceType String?
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model GuestFeedback {
+  id               String       @id @default(cuid())
+  hotelId          String
+  hotel            Hotel        @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  guestSessionId   String
+  guestSession     GuestSession @relation(fields: [guestSessionId], references: [id])
+  overallStay      Int          // 1-5
+  roomCleanliness  Int          // 1-5
+  staffService     Int          // 1-5
+  stayflowRating   Int          // 1-5
+  comments         String?
+  createdAt        DateTime     @default(now())
+}
