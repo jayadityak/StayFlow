@@ -43,21 +43,23 @@ export default function QrPage() {
     }
   }, [qrData])
 
-  // Generate per-room QRs
+  // Generate per-room QRs (re-run when view switches to rooms so canvases are in DOM)
   useEffect(() => {
-    if (!qrData?.hotelSlug) return
-    rooms.forEach(room => {
-      const canvas = roomCanvasRefs.current[room.id]
-      if (canvas) {
-        const url = `${baseUrl}/hotel/${qrData.hotelSlug}/room/${room.roomNumber}`
-        QRCode.toCanvas(canvas, url, {
-          width: 160,
-          margin: 2,
-          color: { dark: '#0F172A', light: '#FFFFFF' },
-        })
-      }
-    })
-  }, [rooms, qrData, baseUrl])
+    if (!qrData?.hotelSlug || view !== 'rooms') return
+    setTimeout(() => {
+      rooms.forEach(room => {
+        const canvas = roomCanvasRefs.current[room.id]
+        if (canvas) {
+          const url = `${baseUrl}/hotel/${qrData.hotelSlug}/room/${room.roomNumber}`
+          QRCode.toCanvas(canvas, url, {
+            width: 160,
+            margin: 2,
+            color: { dark: '#0F172A', light: '#FFFFFF' },
+          })
+        }
+      })
+    }, 50)
+  }, [rooms, qrData, baseUrl, view])
 
   const downloadQR = (canvas: HTMLCanvasElement | null, filename: string) => {
     if (!canvas) return

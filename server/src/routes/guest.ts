@@ -471,7 +471,7 @@ router.post('/conversations/:id/message', verifyGuestToken, async (req: any, res
         conversationId: conversation.id,
         senderType: 'guest',
         content,
-        englishContent: translateToEnglish(content, lang),
+        englishContent: await translateToEnglish(content, lang),
         originalLanguage: lang,
       },
     });
@@ -1166,7 +1166,7 @@ async function createServiceRequest(
   // For staff-facing fields (details, notification), always store English.
   // translateToEnglish returns original text if lang is 'en', or a
   // "[Language — translation pending] <original>" placeholder otherwise.
-  const englishContent = translateToEnglish(content, lang);
+  const englishContent = await translateToEnglish(content, lang);
 
   const request = await prisma.serviceRequest.create({
     data: {
@@ -1708,7 +1708,7 @@ async function processGuestMessage(
     if (llmReply) {
       // LLM responds in guest's language. englishMessage is the same if English,
       // otherwise mark as needing translation (placeholder until real API is wired).
-      return { message: llmReply, englishMessage: translateToEnglish(llmReply, lang) };
+      return { message: llmReply, englishMessage: await translateToEnglish(llmReply, lang) };
     }
 
     // Claude unavailable or no key — fall back to existing behaviour

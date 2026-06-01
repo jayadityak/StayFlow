@@ -77,6 +77,41 @@
   }
 }
 
+
+/* Mobile viewport height — uses dvh where supported (accounts for mobile URL bar) */
+@supports (height: 100dvh) {
+  .h-screen-mobile {
+    height: 100dvh;
+  }
+  .min-h-screen-mobile {
+    min-height: 100dvh;
+  }
+}
+
+@supports not (height: 100dvh) {
+  .h-screen-mobile {
+    height: 100vh;
+  }
+  .min-h-screen-mobile {
+    min-height: 100vh;
+  }
+}
+
+/* Safe area padding for notched devices */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Prevent overscroll bounce on mobile chat */
+.h-screen-mobile {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 /* Chat message markdown-ish styling */
 .chat-content strong, .chat-content b {
   font-weight: 600;

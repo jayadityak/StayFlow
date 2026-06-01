@@ -1,40 +1,62 @@
-/**
- * Translation service — MVP implementation.
- *
- * Interface is designed so a real translation API (e.g. DeepL, Google Translate)
- * can be swapped in later without changing call sites.
- *
- * Current behaviour:
- *  - If sourceLanguage is 'en' (or missing), return text as-is.
- *  - Otherwise return a clearly-marked placeholder so staff know a translation
- *    is needed but the original content is never lost.
- *
- * To upgrade: replace the body of translateToEnglish with a real API call.
- * The signature must remain: (text: string, sourceLang: string) => Promise<string> | string
- */
+const GOOGLE_TRANSLATE_URL = 'https://translation.googleapis.com/language/translate/v2';
 
-const LANG_NAMES: Record<string, string> = {
-  hi: 'Hindi',
-  ar: 'Arabic',
-  zh: 'Chinese',
-  fr: 'French',
-  de: 'German',
-  es: 'Spanish',
-  ru: 'Russian',
-  ja: 'Japanese',
-  ko: 'Korean',
-  pt: 'Portuguese',
-  it: 'Italian',
-};
+const cache = new Map<string, string>();
+const CACHE_MAX = 500;
 
-/**
- * Returns an English version of the text.
- * - If sourceLang is 'en' or absent, returns the original unchanged.
- * - Otherwise returns a placeholder that clearly marks it as needing
- *   translation, preserving the original text so nothing is lost.
- */
-export function translateToEnglish(text: string, sourceLang: string): string {
+function cacheKey(text: string, source: string, target: string): string {
+  return `${source}:${target}:${text}`;
+}
+
+async function googleTranslate(text: string, source: string, target: string): Promise<string> {
+  const apiKey = process.env.GOOGLE_TRANSLATE_API_KEY;
+  if (!apiKey) return text;
+
+  const key = cacheKey(text, source, target);
+  const cached = cache.get(key);
+  if (cached) return cached;
+
+  try {
+    const res = await fetch(`${GOOGLE_TRANSLATE_URL}?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        q: text,
+        source,
+        target,
+        format: 'text',
+      }),
+    });
+
+    if (!res.ok) {
+      console.error(`Google Translate API error: ${res.status}`);
+      return text;
+    }
+
+    const data = await res.json() as {
+      data: { translations: Array<{ translatedText: string }> };
+    };
+
+    const translated = data.data.translations[0]?.translatedText ?? text;
+
+    if (cache.size >= CACHE_MAX) {
+      const firstKey = cache.keys().next().value;
+      if (firstKey) cache.delete(firstKey);
+    }
+    cache.set(key, translated);
+
+    return translated;
+  } catch (err) {
+    console.error('Google Translate call failed:', err);
+    return text;
+  }
+}
+
+export async function translateToEnglish(text: string, sourceLang: string): Promise<string> {
   if (!sourceLang || sourceLang === 'en') return text;
-  const langName = LANG_NAMES[sourceLang] || sourceLang.toUpperCase();
-  return `[${langName} — translation pending] ${text}`;
+  return googleTranslate(text, sourceLang, 'en');
+}
+
+export async function translateFromEnglish(text: string, targetLang: string): Promise<string> {
+  if (!targetLang || targetLang === 'en') return text;
+  return googleTranslate(text, 'en', targetLang);
 }

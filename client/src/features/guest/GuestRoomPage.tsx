@@ -107,7 +107,7 @@ export default function GuestRoomPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+      <div className="min-h-screen-mobile bg-[#0F172A] flex items-center justify-center">
         <Loader2 size={32} className="text-[#4F6EF7] animate-spin" />
       </div>
     )
@@ -115,7 +115,7 @@ export default function GuestRoomPage() {
 
   if (notFound) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-4">
+      <div className="min-h-screen-mobile bg-[#0F172A] flex items-center justify-center p-4">
         <div className="text-center text-white">
           <div className="w-14 h-14 rounded-2xl bg-red-500/20 flex items-center justify-center mx-auto mb-4">
             <Hotel size={28} className="text-red-400" />
@@ -138,7 +138,7 @@ export default function GuestRoomPage() {
   // ── Language picker ───────────────────────────────────────────────────────
   if (!langPicked) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] flex items-center justify-center p-4">
+      <div className="min-h-screen-mobile bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] flex items-center justify-center p-4 safe-top safe-bottom">
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl bg-[#4F6EF7] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#4F6EF7]/30">
@@ -189,7 +189,7 @@ export default function GuestRoomPage() {
   // ── Name form ─────────────────────────────────────────────────────────────
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] flex items-center justify-center p-4"
+      className="min-h-screen-mobile bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] flex items-center justify-center p-4 safe-top safe-bottom"
       dir={isRTL(lang) ? 'rtl' : 'ltr'}
     >
       <div className="w-full max-w-sm">

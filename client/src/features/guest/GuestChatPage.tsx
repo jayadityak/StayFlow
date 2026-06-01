@@ -585,7 +585,7 @@ export default function GuestChatPage() {
 
     if (feedbackSubmitted) {
       return (
-        <div className="h-screen flex flex-col items-center justify-center bg-[#0F172A] p-8 text-center" dir={isRTL(lang) ? 'rtl' : 'ltr'}>
+        <div className="h-screen-mobile flex flex-col items-center justify-center bg-[#0F172A] p-8 text-center" dir={isRTL(lang) ? 'rtl' : 'ltr'}>
           <div className="w-16 h-16 rounded-2xl bg-[#4F6EF7] flex items-center justify-center mx-auto mb-6">
             <Hotel size={30} className="text-white" />
           </div>
@@ -665,9 +665,9 @@ export default function GuestChatPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-[#F1F5F9]/50 max-w-lg mx-auto relative" dir={isRTL(lang) ? 'rtl' : 'ltr'}>
+    <div className="h-screen-mobile flex flex-col bg-[#F1F5F9]/50 max-w-lg mx-auto relative" dir={isRTL(lang) ? 'rtl' : 'ltr'}>
       {/* Header */}
-      <div className="bg-[#0F172A] text-white px-4 py-3 flex items-center gap-3 flex-shrink-0">
+      <div className="bg-[#0F172A] text-white px-4 py-3 safe-top flex items-center gap-3 flex-shrink-0">
         <div className="w-9 h-9 rounded-xl bg-[#4F6EF7] flex items-center justify-center flex-shrink-0">
           <Hotel size={18} />
         </div>
@@ -843,7 +843,7 @@ export default function GuestChatPage() {
       </div>
 
       {/* Input area */}
-      <div className="bg-white border-t px-3 py-2.5 flex-shrink-0">
+      <div className="bg-white border-t px-3 py-2.5 safe-bottom flex-shrink-0">
         {/* Voice settings bar */}
         {voiceEnabled && isSupported && (
           <div className="flex items-center gap-2 mb-2">

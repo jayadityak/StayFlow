@@ -3,6 +3,7 @@ import prisma from '../lib/prisma';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { getCheckoutBoundary } from '../lib/checkoutUtils';
 import { emitToHotel, emitToConversation } from '../lib/sse';
+import { translateFromEnglish } from '../lib/translation';
 
 const router = Router();
 
@@ -87,15 +88,19 @@ router.post('/:id/reply', authenticate, async (req: AuthRequest, res: Response) 
 
     const conversation = await prisma.conversation.findFirst({
       where: { id: req.params.id, hotelId: req.user!.hotelId },
+      include: { guestSession: { select: { preferredLanguage: true } } },
     });
     if (!conversation) return res.status(404).json({ error: 'Not found' });
+
+    const guestLang = conversation.guestSession?.preferredLanguage || 'en';
+    const translatedContent = await translateFromEnglish(content, guestLang);
 
     const message = await prisma.message.create({
       data: {
         conversationId: conversation.id,
         senderType: 'staff',
-        content,
-        englishContent: content, // staff always writes in English
+        content: translatedContent,
+        englishContent: content,
         originalLanguage: 'en',
       },
     });
@@ -108,7 +113,7 @@ router.post('/:id/reply', authenticate, async (req: AuthRequest, res: Response) 
     // Real-time: notify the guest that staff replied (include ID for deduplication)
     emitToConversation(conversation.id, 'staff_reply', {
       id: message.id,
-      content,
+      content: translatedContent,
       senderType: 'staff',
       createdAt: message.createdAt,
     });
