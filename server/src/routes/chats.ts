@@ -114,6 +114,7 @@ router.post('/:id/reply', authenticate, async (req: AuthRequest, res: Response) 
     emitToConversation(conversation.id, 'staff_reply', {
       id: message.id,
       content: translatedContent,
+      translatedContent,
       senderType: 'staff',
       createdAt: message.createdAt,
     });

@@ -3,7 +3,7 @@ const GOOGLE_TRANSLATE_URL = 'https://translation.googleapis.com/language/transl
 const cache = new Map<string, string>();
 const CACHE_MAX = 500;
 
-function cacheKey(text: string, source: string, target: string): string {
+function cacheKey(text: string, source: string, target: string) {
   return `${source}:${target}:${text}`;
 }
 
@@ -19,34 +19,23 @@ async function googleTranslate(text: string, source: string, target: string): Pr
     const res = await fetch(`${GOOGLE_TRANSLATE_URL}?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        q: text,
-        source,
-        target,
-        format: 'text',
-      }),
+      body: JSON.stringify({ q: text, source, target, format: 'text' }),
     });
 
     if (!res.ok) {
-      console.error(`Google Translate API error: ${res.status}`);
+      console.error('Google Translate error:', res.status, await res.text());
       return text;
     }
 
-    const data = await res.json() as {
-      data: { translations: Array<{ translatedText: string }> };
-    };
+    const data: any = await res.json();
+    const translated = data.data?.translations?.[0]?.translatedText || text;
 
-    const translated = data.data.translations[0]?.translatedText ?? text;
-
-    if (cache.size >= CACHE_MAX) {
-      const firstKey = cache.keys().next().value;
-      if (firstKey) cache.delete(firstKey);
-    }
+    if (cache.size >= CACHE_MAX) cache.clear();
     cache.set(key, translated);
 
     return translated;
   } catch (err) {
-    console.error('Google Translate call failed:', err);
+    console.error('Translation fetch failed:', err);
     return text;
   }
 }
