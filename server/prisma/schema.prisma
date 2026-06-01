@@ -40,19 +40,6 @@ model Hotel {
   notifications    Notification[]
   qrScans          QrScan[]
   feedbacks        GuestFeedback[]
-  pmsConnection    PmsConnection?
-}
-
-model PmsConnection {
-  id           String   @id @default(cuid())
-  hotelId      String   @unique
-  hotel        Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-  provider     String   @default("mock-opera")
-  hotelCode    String
-  isActive     Boolean  @default(true)
-  lastSyncAt   DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
 }
 
 model User {
@@ -145,8 +132,6 @@ model GuestSession {
   otpVerified       Boolean   @default(false)
   token             String?   @unique
   preferredLanguage String    @default("en")
-  externalReservationId String?
-  pmsStatus             String?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
@@ -154,8 +139,6 @@ model GuestSession {
   serviceRequests ServiceRequest[]
   orders          Order[]
   feedbacks       GuestFeedback[]
-
-  @@index([hotelId, externalReservationId])
 }
 
 model Conversation {

@@ -19,8 +19,6 @@ import analyticsRoutes from './routes/analytics';
 import qrRoutes from './routes/qr';
 import eventsRoutes from './routes/events';
 import { startCleanupJob } from './lib/cleanup';
-import pmsRoutes from './routes/pms';
-import { initializePmsProviders } from './pms';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -47,7 +45,6 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/qr', qrRoutes);
 app.use('/api/events', eventsRoutes);
-app.use('/api/pms', pmsRoutes);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -56,7 +53,6 @@ app.get('/health', (_req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 StayFlow server running on port ${PORT}`);
   startCleanupJob();
-  initializePmsProviders();
 });
 
 export default app;
