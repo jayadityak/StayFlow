@@ -43,7 +43,7 @@ export default function QrPage() {
     }
   }, [qrData])
 
-  // Generate per-room QRs (re-run when view switches to rooms so canvases are in DOM)
+  // Generate per-room QRs
   useEffect(() => {
     if (!qrData?.hotelSlug || view !== 'rooms') return
     setTimeout(() => {

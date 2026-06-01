@@ -75,41 +75,26 @@
     background-color: hsl(var(--border));
     border-radius: 2px;
   }
-}
 
-
-/* Mobile viewport height — uses dvh where supported (accounts for mobile URL bar) */
-@supports (height: 100dvh) {
-  .h-screen-mobile {
-    height: 100dvh;
-  }
-  .min-h-screen-mobile {
-    min-height: 100dvh;
-  }
-}
-
-@supports not (height: 100dvh) {
   .h-screen-mobile {
     height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
+
   .min-h-screen-mobile {
     min-height: 100vh;
+    min-height: 100dvh;
   }
-}
 
-/* Safe area padding for notched devices */
-.safe-top {
-  padding-top: env(safe-area-inset-top);
-}
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
 
-.safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-/* Prevent overscroll bounce on mobile chat */
-.h-screen-mobile {
-  overflow: hidden;
-  overscroll-behavior: none;
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
 }
 
 /* Chat message markdown-ish styling */
