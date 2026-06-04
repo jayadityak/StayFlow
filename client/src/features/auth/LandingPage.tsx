@@ -6,70 +6,50 @@ import {
   Bell, Shield, Sparkles, ArrowRight, CheckCircle2,
 } from 'lucide-react'
 
-// ── Scrolling logo ticker ──────────────────────────────────────────────────
-// Uses logo.clearbit.com to serve real brand logos automatically.
-// All logos are shown in grayscale and fade to color on hover.
-const HOTEL_LOGOS = [
-  { name: 'Marriott',    domain: 'marriott.com' },
-  { name: 'Hyatt',       domain: 'hyatt.com' },
-  { name: 'Hilton',      domain: 'hilton.com' },
-  { name: 'Radisson',    domain: 'radissonhotels.com' },
-  { name: 'Novotel',     domain: 'novotel.com' },
-  { name: 'Sheraton',    domain: 'sheraton.com' },
-  { name: 'Westin',      domain: 'westin.com' },
-  { name: 'IHG',         domain: 'ihg.com' },
-  { name: 'AccorHotels', domain: 'accor.com' },
-  { name: 'Wyndham',     domain: 'wyndhamhotels.com' },
+// ── Scrolling wordmark ticker ──────────────────────────────────────────────
+const HOTEL_NAMES = [
+  'Marriott', 'Hyatt', 'Hilton', 'ITC Hotels', 'Taj Hotels',
+  'Oberoi', 'Leela', 'Radisson', 'Novotel', 'Sheraton',
 ]
 
 function LogoTicker() {
-  const repeated = [...HOTEL_LOGOS, ...HOTEL_LOGOS]
+  const repeated = [...HOTEL_NAMES, ...HOTEL_NAMES]
   return (
-    <div className="w-full overflow-hidden border-y border-gray-100 py-6 bg-gray-50/60">
+    <div style={{ width: '100%', overflow: 'hidden', borderTop: '1px solid #f3f4f6', borderBottom: '1px solid #f3f4f6', background: '#fafafa', padding: '20px 0' }}>
       <div
-        className="flex items-center"
         style={{
           display: 'flex',
-          animation: 'ticker 35s linear infinite',
+          alignItems: 'center',
           width: 'max-content',
+          animation: 'stayflow-ticker 30s linear infinite',
         }}
         onMouseEnter={e => (e.currentTarget.style.animationPlayState = 'paused')}
         onMouseLeave={e => (e.currentTarget.style.animationPlayState = 'running')}
       >
-        {repeated.map((hotel, i) => (
-          <div
+        {repeated.map((name, i) => (
+          <span
             key={i}
-            className="mx-10 flex items-center justify-center shrink-0"
-            style={{ height: 32 }}
-            title={hotel.name}
+            style={{
+              margin: '0 48px',
+              fontSize: 13,
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: '#9ca3af',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+              transition: 'color 0.2s',
+              cursor: 'default',
+            }}
+            onMouseEnter={e => ((e.target as HTMLElement).style.color = '#374151')}
+            onMouseLeave={e => ((e.target as HTMLElement).style.color = '#9ca3af')}
           >
-            <img
-              src={`https://logo.clearbit.com/${hotel.domain}`}
-              alt={hotel.name}
-              style={{
-                height: 28,
-                width: 'auto',
-                maxWidth: 100,
-                objectFit: 'contain',
-                filter: 'grayscale(100%) opacity(40%)',
-                transition: 'filter 0.3s',
-              }}
-              onMouseEnter={e => ((e.target as HTMLImageElement).style.filter = 'grayscale(0%) opacity(80%)')}
-              onMouseLeave={e => ((e.target as HTMLImageElement).style.filter = 'grayscale(100%) opacity(40%)')}
-              onError={e => {
-                // Fallback to text if logo fails to load
-                const img = e.target as HTMLImageElement
-                const span = document.createElement('span')
-                span.textContent = hotel.name
-                span.style.cssText = 'font-size:13px;font-weight:600;color:#9ca3af;letter-spacing:0.05em;text-transform:uppercase'
-                img.parentNode?.replaceChild(span, img)
-              }}
-            />
-          </div>
+            {name}
+          </span>
         ))}
       </div>
       <style>{`
-        @keyframes ticker {
+        @keyframes stayflow-ticker {
           from { transform: translateX(0); }
           to   { transform: translateX(-50%); }
         }
