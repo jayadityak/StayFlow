@@ -19,6 +19,7 @@ import QrPage from '@/features/qr/QrPage'
 import AnalyticsPage from '@/features/analytics/AnalyticsPage'
 import SettingsPage from '@/features/settings/SettingsPage'
 import StaffBoardPage from '@/features/staffboard/StaffBoardPage'
+import PmsPage from '@/features/pms/PmsPage'
 import GuestVerifyPage from '@/features/guest/GuestVerifyPage'
 import GuestChatPage from '@/features/guest/GuestChatPage'
 import GuestRoomPage from '@/features/guest/GuestRoomPage'
@@ -86,6 +87,7 @@ export default function App() {
               <Route path="orders" element={<AdminRoute><OrdersPage /></AdminRoute>} />
               <Route path="qr" element={<AdminRoute><QrPage /></AdminRoute>} />
               <Route path="analytics" element={<AdminRoute><AnalyticsPage /></AdminRoute>} />
+              <Route path="pms" element={<AdminRoute><PmsPage /></AdminRoute>} />
               <Route path="settings" element={<AdminRoute><SettingsPage /></AdminRoute>} />
               {/* Shared routes (admin + staff) */}
               <Route path="requests" element={<RequestsPage />} />
