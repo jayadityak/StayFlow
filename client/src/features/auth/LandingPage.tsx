@@ -120,7 +120,7 @@ export default function LandingPage() {
     if (isAuthenticated) navigate('/app/overview', { replace: true })
   }, [isAuthenticated, navigate])
 
-  const goDemo = () => navigate('/login')
+  const goDemo = () => window.open('https://cal.com/jayaditya-khamesra-u4ek0s', '_blank')
 
   return (
     <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
