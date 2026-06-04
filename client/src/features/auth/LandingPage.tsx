@@ -129,20 +129,12 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
           <span className="text-xl font-bold tracking-tight text-gray-900">StayFlow</span>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={goDemo}
-              className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
-            >
-              Login
-            </button>
-            <button
-              onClick={goDemo}
-              className="px-5 py-2 text-sm font-semibold rounded-full bg-gray-900 text-white hover:bg-gray-700 transition-colors"
-            >
-              Book a Demo
-            </button>
-          </div>
+          <button
+            onClick={goDemo}
+            className="px-5 py-2 text-sm font-semibold rounded-full bg-gray-900 text-white hover:bg-gray-700 transition-colors"
+          >
+            Book a Demo
+          </button>
         </div>
       </nav>
 
@@ -174,12 +166,6 @@ export default function LandingPage() {
                 className="px-7 py-3 text-sm font-semibold rounded-full bg-gray-900 text-white hover:bg-gray-700 transition-colors"
               >
                 Book a Demo
-              </button>
-              <button
-                onClick={goDemo}
-                className="px-7 py-3 text-sm font-semibold rounded-full border border-gray-200 text-gray-700 hover:border-gray-400 transition-colors"
-              >
-                See it Live →
               </button>
             </div>
 
