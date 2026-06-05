@@ -4,6 +4,7 @@ import { authenticate, AuthRequest } from '../middleware/auth';
 import { getCheckoutBoundary } from '../lib/checkoutUtils';
 import { emitToHotel, emitToConversation } from '../lib/sse';
 import { translateFromEnglish } from '../lib/translation';
+import { suggestStaffReplies } from '../lib/llm';
 
 const router = Router();
 
@@ -119,6 +120,96 @@ router.post('/:id/reply', authenticate, async (req: AuthRequest, res: Response) 
       createdAt: message.createdAt,
     });
     // Real-time: notify other staff that this chat was updated
+    emitToHotel(req.user!.hotelId, 'message_created', { conversationId: conversation.id });
+
+    return res.json(message);
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /chats/:id/context — guest service requests + orders for the info sidebar
+router.get('/:id/context', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const conversation = await prisma.conversation.findFirst({
+      where: { id: req.params.id, hotelId: req.user!.hotelId },
+      select: { guestSessionId: true },
+    });
+    if (!conversation) return res.status(404).json({ error: 'Not found' });
+
+    const [requests, orders] = await Promise.all([
+      prisma.serviceRequest.findMany({
+        where: { guestSessionId: conversation.guestSessionId },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        select: { id: true, type: true, status: true, details: true, createdAt: true },
+      }),
+      prisma.order.findMany({
+        where: { guestSessionId: conversation.guestSessionId },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        include: {
+          items: { select: { itemNameSnapshot: true, quantity: true, itemPriceSnapshot: true } },
+        },
+      }),
+    ]);
+
+    return res.json({ requests, orders });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /chats/:id/suggest — AI reply suggestions from Claude
+router.post('/:id/suggest', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const conversation = await prisma.conversation.findFirst({
+      where: { id: req.params.id, hotelId: req.user!.hotelId },
+      include: {
+        guestSession: { select: { guestName: true } },
+        room: { select: { roomNumber: true } },
+        hotel: { select: { name: true } },
+        messages: { orderBy: { createdAt: 'desc' }, take: 10 },
+      },
+    });
+    if (!conversation) return res.status(404).json({ error: 'Not found' });
+
+    const suggestions = await suggestStaffReplies(
+      [...conversation.messages].reverse(),
+      conversation.guestSession.guestName,
+      conversation.room.roomNumber,
+      conversation.hotel.name,
+    );
+
+    return res.json({ suggestions });
+  } catch (err) {
+    console.error('[suggest]', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /chats/:id/note — internal staff note, not visible to guest
+router.post('/:id/note', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const { content } = req.body;
+    if (!content) return res.status(400).json({ error: 'Content required' });
+
+    const conversation = await prisma.conversation.findFirst({
+      where: { id: req.params.id, hotelId: req.user!.hotelId },
+    });
+    if (!conversation) return res.status(404).json({ error: 'Not found' });
+
+    const message = await prisma.message.create({
+      data: {
+        conversationId: conversation.id,
+        senderType: 'note',
+        content,
+        englishContent: content,
+        originalLanguage: 'en',
+      },
+    });
+
+    await prisma.conversation.update({ where: { id: conversation.id }, data: { updatedAt: new Date() } });
     emitToHotel(req.user!.hotelId, 'message_created', { conversationId: conversation.id });
 
     return res.json(message);

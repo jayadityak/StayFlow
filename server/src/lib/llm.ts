@@ -36,6 +36,37 @@ Guidelines:
 - Respond entirely in ${langName}. If the guest writes in another language, still reply in ${langName}.`;
 }
 
+export async function suggestStaffReplies(
+  messages: { senderType: string; englishContent?: string | null; content: string }[],
+  guestName: string,
+  roomNumber: string,
+  hotelName: string,
+): Promise<string[]> {
+  if (!process.env.ANTHROPIC_API_KEY) return [];
+  try {
+    const transcript = messages
+      .filter(m => m.senderType !== 'note')
+      .slice(-10)
+      .map(m => `${m.senderType === 'guest' ? 'Guest' : 'Staff'}: ${m.englishContent ?? m.content}`)
+      .join('\n');
+
+    const response = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 300,
+      system: `You are helping a hotel staff member at ${hotelName} reply to guest ${guestName} in room ${roomNumber}. Suggest 3 short, professional reply options. Return ONLY a valid JSON array of exactly 3 strings. No markdown, no explanation — just the JSON array.`,
+      messages: [{ role: 'user', content: transcript || 'No messages yet.' }],
+    });
+
+    const block = response.content[0];
+    if (block.type !== 'text') return [];
+    const suggestions = JSON.parse(block.text.trim());
+    return Array.isArray(suggestions) ? suggestions.slice(0, 3) : [];
+  } catch (err) {
+    console.error('[llm] suggestStaffReplies failed:', err);
+    return [];
+  }
+}
+
 export async function askClaudeForGuest(
   message: string,
   ctx: GuestContext
