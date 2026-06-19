@@ -23,6 +23,9 @@ import PmsPage from '@/features/pms/PmsPage'
 import GuestVerifyPage from '@/features/guest/GuestVerifyPage'
 import GuestChatPage from '@/features/guest/GuestChatPage'
 import GuestRoomPage from '@/features/guest/GuestRoomPage'
+import ForgotPasswordPage from '@/features/auth/ForgotPasswordPage'
+import ResetPasswordPage from '@/features/auth/ResetPasswordPage'
+import ImportPage from '@/features/import/ImportPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth()
@@ -62,6 +65,8 @@ export default function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             {/* Guest routes — old flow (fallback) */}
             <Route path="/hotel/:slug/verify" element={<GuestVerifyPage />} />
@@ -88,6 +93,7 @@ export default function App() {
               <Route path="qr" element={<AdminRoute><QrPage /></AdminRoute>} />
               <Route path="analytics" element={<AdminRoute><AnalyticsPage /></AdminRoute>} />
               <Route path="pms" element={<AdminRoute><PmsPage /></AdminRoute>} />
+              <Route path="import" element={<AdminRoute><ImportPage /></AdminRoute>} />
               <Route path="settings" element={<AdminRoute><SettingsPage /></AdminRoute>} />
               {/* Shared routes (admin + staff) */}
               <Route path="requests" element={<RequestsPage />} />

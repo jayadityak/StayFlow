@@ -3,7 +3,6 @@ import { authenticate, AuthRequest } from '../middleware/auth';
 import { getPmsProvider } from '../pms';
 import { syncReservations } from '../pms/sync';
 import { format } from 'date-fns';
-import prisma from '../lib/prisma';
 
 const router = Router();
 
@@ -15,15 +14,10 @@ router.get('/status', authenticate, async (req: AuthRequest, res: Response) => {
     }
 
     const health = await provider.healthCheck();
-    const connection = await prisma.pmsConnection.findUnique({
-      where: { hotelId: req.user!.hotelId },
-    });
-
     return res.json({
       connected: health.ok,
       provider: provider.name,
       message: health.message,
-      lastSyncAt: connection?.lastSyncAt,
     });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });

@@ -97,12 +97,17 @@ export default function LoginPage() {
               <p>Staff: staff@royalpalm.com / staff123</p>
             </div>
 
-            <p className="text-center text-sm text-muted-foreground mt-4">
-              New hotel?{' '}
-              <Link to="/signup" className="text-primary hover:underline font-medium">
-                Create account
+            <div className="flex items-center justify-between text-sm text-muted-foreground mt-4">
+              <Link to="/forgot-password" className="hover:text-foreground hover:underline">
+                Forgot password?
               </Link>
-            </p>
+              <span>
+                New hotel?{' '}
+                <Link to="/signup" className="text-primary hover:underline font-medium">
+                  Sign up
+                </Link>
+              </span>
+            </div>
           </CardContent>
         </Card>
       </div>

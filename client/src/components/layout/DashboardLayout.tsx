@@ -8,7 +8,7 @@ import {
   LayoutDashboard, BedDouble, Waves, Wrench, UtensilsCrossed,
   MessageSquare, ClipboardList, ShoppingBag, Bell, QrCode,
   BarChart3, Settings, LogOut, Menu, X, User, ChevronDown,
-  Search, Hotel, Users, Building2
+  Search, Hotel, Users, Building2, Upload
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -31,6 +31,7 @@ const adminNavItems = [
   { path: '/app/qr', label: 'QR Code', icon: QrCode },
   { path: '/app/analytics', label: 'Insights', icon: BarChart3 },
   { path: '/app/pms', label: 'PMS', icon: Building2 },
+  { path: '/app/import', label: 'Import Guests', icon: Upload },
   { path: '/app/settings', label: 'Settings', icon: Settings },
 ]
 

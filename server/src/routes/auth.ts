@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import prisma from '../lib/prisma';
 import { authenticate, AuthRequest } from '../middleware/auth';
+import { randomUUID } from 'crypto';
+import { sendPasswordResetEmail } from '../lib/email';
 
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
@@ -148,6 +150,54 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
       hotel: { id: user.hotel.id, name: user.hotel.name, slug: user.hotel.slug },
     });
   } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /auth/forgot-password
+router.post('/forgot-password', async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email required' });
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    // Always return 200 to avoid email enumeration
+    if (!user) return res.json({ success: true });
+
+    const token = randomUUID();
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    await prisma.otpCode.create({ data: { email, code: token, expiresAt } });
+
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
+    await sendPasswordResetEmail(email, resetUrl);
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /auth/reset-password
+router.post('/reset-password', async (req: Request, res: Response) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) return res.status(400).json({ error: 'Token and password required' });
+    if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+    const record = await prisma.otpCode.findFirst({
+      where: { code: token, verified: false, expiresAt: { gt: new Date() } },
+    });
+    if (!record) return res.status(400).json({ error: 'Invalid or expired reset link' });
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    await prisma.user.update({ where: { email: record.email }, data: { passwordHash } });
+    await prisma.otpCode.update({ where: { id: record.id }, data: { verified: true } });
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error(err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });

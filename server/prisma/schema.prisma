@@ -129,6 +129,8 @@ model GuestSession {
   email        String
   checkInDate  DateTime
   checkOutDate DateTime
+  phone             String?
+  source            String    @default("qr")  // 'qr' | 'csv' | 'whatsapp'
   otpVerified       Boolean   @default(false)
   token             String?   @unique
   preferredLanguage String    @default("en")

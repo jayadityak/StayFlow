@@ -1193,7 +1193,7 @@ async function createServiceRequest(
   return request;
 }
 
-async function processGuestMessage(
+export async function processGuestMessage(
   content: string,
   session: any,
   conversation: any

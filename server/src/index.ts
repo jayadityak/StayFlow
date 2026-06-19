@@ -18,6 +18,8 @@ import notificationRoutes from './routes/notifications';
 import analyticsRoutes from './routes/analytics';
 import qrRoutes from './routes/qr';
 import eventsRoutes from './routes/events';
+import importRoutes from './routes/import';
+import whatsappRoutes from './routes/whatsapp';
 import { startCleanupJob } from './lib/cleanup';
 
 const app = express();
@@ -45,6 +47,8 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/qr', qrRoutes);
 app.use('/api/events', eventsRoutes);
+app.use('/api/import', importRoutes);
+app.use('/api/whatsapp', express.urlencoded({ extended: false }), whatsappRoutes);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
