@@ -176,9 +176,9 @@ router.post('/:id/suggest', authenticate, async (req: AuthRequest, res: Response
 
     const suggestions = await suggestStaffReplies(
       [...conversation.messages].reverse(),
-      conversation.guestSession.guestName,
-      conversation.room.roomNumber,
-      conversation.hotel.name,
+      conversation.guestSession?.guestName ?? 'Guest',
+      conversation.room?.roomNumber ?? '',
+      conversation.hotel?.name ?? '',
     );
 
     return res.json({ suggestions });

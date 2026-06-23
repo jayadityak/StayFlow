@@ -285,7 +285,7 @@ export default function RoomPanel() {
                             </Button>
                           )}
                           {req.status === 'in_progress' && (
-                            <Button size="sm" className="h-7 text-xs bg-green-600 hover:bg-green-700" onClick={() => requestStatusMutation.mutate({ reqId: req.id, status: 'completed' })}>
+                            <Button size="sm" className="h-7 text-xs bg-green-600 hover:bg-green-700" disabled={!req.assignedTo} onClick={() => requestStatusMutation.mutate({ reqId: req.id, status: 'completed' })}>
                               <CheckCircle2 size={11} className="mr-1" /> Done
                             </Button>
                           )}

@@ -123,6 +123,8 @@ router.post('/login', async (req: Request, res: Response) => {
       { expiresIn: '7d' }
     );
 
+    if (!user.hotel) return res.status(500).json({ error: 'Hotel not found for this user' });
+
     return res.json({
       token,
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
@@ -144,6 +146,8 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
+
+    if (!user.hotel) return res.status(500).json({ error: 'Hotel not found for this user' });
 
     return res.json({
       user: { id: user.id, name: user.name, email: user.email, role: user.role },

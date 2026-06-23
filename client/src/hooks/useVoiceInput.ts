@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 
 export type VoiceState = 'idle' | 'recording' | 'processing' | 'error'
-export type VoiceLang = 'en-IN' | 'hi-IN'
+export type VoiceLang = 'en-IN' | 'hi-IN' | 'ar-SA' | 'zh-CN' | 'fr-FR' | 'de-DE' | 'es-ES' | 'ru-RU' | 'ja-JP' | 'ko-KR' | 'pt-BR' | 'it-IT' | string
 
 interface UseVoiceInputOptions {
   language?: VoiceLang

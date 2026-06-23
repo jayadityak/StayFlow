@@ -16,7 +16,7 @@ export function useSSEEvents() {
     let reconnectTimeout: ReturnType<typeof setTimeout> | null = null
 
     const connect = async () => {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('stayflow_token')
       if (!token) return
 
       abortRef.current = new AbortController()

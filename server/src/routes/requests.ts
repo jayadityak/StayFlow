@@ -2,7 +2,8 @@ import { Router, Response } from 'express';
 import prisma from '../lib/prisma';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { getCheckoutBoundary } from '../lib/checkoutUtils';
-import { T } from '../lib/i18n';
+import { T, TEN } from '../lib/i18n';
+import { emitToConversation } from '../lib/sse';
 
 const router = Router();
 
@@ -224,14 +225,19 @@ async function sendGuestMessage(guestSessionId: string, msgKey: string) {
     if (!conversation) return;
 
     const lang = session?.preferredLanguage || 'en';
+    const content = T(lang, msgKey);
+    const englishContent = TEN(msgKey);
     await prisma.message.create({
       data: {
         conversationId: conversation.id,
         senderType: 'hotel',
-        content: T(lang, msgKey),
+        content,
+        englishContent,
+        originalLanguage: lang,
         inputType: 'text',
       },
     });
+    emitToConversation(conversation.id, 'hotel_message', { conversationId: conversation.id });
   } catch (err) {
     console.error('Failed to send guest message:', err);
   }

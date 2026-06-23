@@ -48,6 +48,7 @@ export async function syncReservations(hotelId: string): Promise<{ created: numb
             otpVerified: true,
             token,
             source: 'pms',
+            preferredLanguage: 'en',
           },
         });
         created++;

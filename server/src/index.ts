@@ -20,7 +20,9 @@ import qrRoutes from './routes/qr';
 import eventsRoutes from './routes/events';
 import importRoutes from './routes/import';
 import whatsappRoutes from './routes/whatsapp';
+import pmsRoutes from './routes/pms';
 import { startCleanupJob } from './lib/cleanup';
+import { initializePmsProviders } from './pms';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -49,14 +51,16 @@ app.use('/api/qr', qrRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/import', importRoutes);
 app.use('/api/whatsapp', express.urlencoded({ extended: false }), whatsappRoutes);
+app.use('/api/pms', pmsRoutes);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 StayFlow server running on port ${PORT}`);
   startCleanupJob();
+  await initializePmsProviders();
 });
 
 export default app;

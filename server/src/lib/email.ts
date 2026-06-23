@@ -1,10 +1,16 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = 'StayFlow <noreply@stayflow.in>';
 
+function getResend() {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return null;
+  return new Resend(key);
+}
+
 export async function sendPasswordResetEmail(email: string, resetUrl: string): Promise<void> {
-  if (!process.env.RESEND_API_KEY) {
+  const resend = getResend();
+  if (!resend) {
     console.warn('[email] RESEND_API_KEY not set — skipping password reset email');
     return;
   }
@@ -32,7 +38,8 @@ export async function sendStaffNotificationEmail(
   roomNumber: string,
   details: string,
 ): Promise<void> {
-  if (!process.env.RESEND_API_KEY) return;
+  const resend = getResend();
+  if (!resend) return;
   await resend.emails.send({
     from: FROM,
     to: email,

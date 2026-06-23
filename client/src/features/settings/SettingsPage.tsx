@@ -144,6 +144,16 @@ export default function SettingsPage() {
                   <SelectContent>
                     <SelectItem value="en-IN">English (India)</SelectItem>
                     <SelectItem value="hi-IN">Hindi (हिंदी)</SelectItem>
+                    <SelectItem value="ar-SA">Arabic (العربية)</SelectItem>
+                    <SelectItem value="zh-CN">Chinese (中文)</SelectItem>
+                    <SelectItem value="fr-FR">French (Français)</SelectItem>
+                    <SelectItem value="de-DE">German (Deutsch)</SelectItem>
+                    <SelectItem value="es-ES">Spanish (Español)</SelectItem>
+                    <SelectItem value="ru-RU">Russian (Русский)</SelectItem>
+                    <SelectItem value="ja-JP">Japanese (日本語)</SelectItem>
+                    <SelectItem value="ko-KR">Korean (한국어)</SelectItem>
+                    <SelectItem value="pt-BR">Portuguese (Português)</SelectItem>
+                    <SelectItem value="it-IT">Italian (Italiano)</SelectItem>
                     <SelectItem value="en-US">English (US)</SelectItem>
                     <SelectItem value="en-GB">English (UK)</SelectItem>
                   </SelectContent>

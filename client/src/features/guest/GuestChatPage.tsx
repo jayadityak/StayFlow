@@ -310,6 +310,9 @@ export default function GuestChatPage() {
       })
       if (res.status === 403) { setSessionExpired(true); return }
       const data = await res.json()
+      if (!res.ok || !data.message) {
+        throw new Error(data.error || 'Server error')
+      }
       setMessages(prev => {
         const next = [...prev, data.message]
         serverMsgCount.current = next.filter(m => !m.id.startsWith('tmp-')).length
@@ -507,11 +510,15 @@ export default function GuestChatPage() {
     setOrderLoading(true)
     try {
       const items = Object.entries(cart).map(([menuItemId, quantity]) => ({ menuItemId, quantity }))
-      await fetch('/api/guest/orders', {
+      const orderRes = await fetch('/api/guest/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-guest-token': guestToken! },
         body: JSON.stringify({ items }),
       })
+      if (!orderRes.ok) {
+        const err = await orderRes.json().catch(() => ({}))
+        throw new Error(err.error || 'Order failed')
+      }
       const summary = Object.entries(cart).map(([id, q]) => `${menuItems.find(i => i.id === id)?.name} × ${q}`).join(', ')
       const confirmMsg: Message = {
         id: 'order-' + Date.now(),
@@ -522,7 +529,14 @@ export default function GuestChatPage() {
       setMessages(prev => [...prev, confirmMsg])
       setCart({})
       setShowMenu(false)
-    } catch { console.error('Order failed') }
+    } catch (err: any) {
+      setMessages(prev => [...prev, {
+        id: 'order-err-' + Date.now(),
+        senderType: 'assistant',
+        content: err.message || 'Failed to place order. Please try again.',
+        createdAt: new Date().toISOString(),
+      }])
+    }
     finally { setOrderLoading(false) }
   }
 

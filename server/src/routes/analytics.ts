@@ -67,7 +67,7 @@ router.get('/overview', authenticate, async (req: AuthRequest, res: Response) =>
         where: { hotelId, isBillable: true, createdAt: { gte: monthAgo } },
       }),
       prisma.serviceRequest.findMany({
-        where: { hotelId, status: { in: ['completed', 'fulfilled'] }, createdAt: { gte: monthAgo } },
+        where: { hotelId, status: 'completed', createdAt: { gte: monthAgo } },
         select: { type: true, createdAt: true, updatedAt: true },
       }),
     ]);
@@ -122,8 +122,6 @@ router.get('/overview', authenticate, async (req: AuthRequest, res: Response) =>
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
-
-export default router;
 
 // Activity feed endpoint
 router.get('/activity', authenticate, async (req: AuthRequest, res: Response) => {
@@ -258,3 +256,5 @@ router.get('/alerts', authenticate, async (req: AuthRequest, res: Response) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+export default router;

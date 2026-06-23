@@ -36,7 +36,7 @@ export default function ImportPage() {
     setLoading(true)
     setError('')
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('stayflow_token')
       const form  = new FormData()
       form.append('file', file)
       const res  = await fetch('/api/import/guests', {
@@ -56,7 +56,7 @@ export default function ImportPage() {
   }
 
   const downloadTemplate = () => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('stayflow_token')
     const a = document.createElement('a')
     a.href = `/api/import/template`
     a.setAttribute('Authorization', `Bearer ${token}`)

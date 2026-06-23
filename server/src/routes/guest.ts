@@ -321,22 +321,27 @@ const verifyGuestToken = async (req: any, res: Response, next: any) => {
   const token = req.headers['x-guest-token'];
   if (!token) return res.status(401).json({ error: 'No guest token' });
 
-  const session = await prisma.guestSession.findUnique({
-    where: { token: token as string },
-    include: { room: true, hotel: true },
-  });
+  try {
+    const session = await prisma.guestSession.findUnique({
+      where: { token: token as string },
+      include: { room: true, hotel: true },
+    });
 
-  if (!session || !session.otpVerified) {
-    return res.status(401).json({ error: 'Invalid guest session' });
+    if (!session || !session.otpVerified) {
+      return res.status(401).json({ error: 'Invalid guest session' });
+    }
+
+    // Block access at noon on checkout day
+    if (!isSessionActive(session.checkOutDate)) {
+      return res.status(403).json({ error: 'session_expired', message: 'Your chat session has ended. Thank you for staying with us! We hope to see you again soon. 🙏' });
+    }
+
+    req.guestSession = session;
+    next();
+  } catch (err) {
+    console.error('[verifyGuestToken]', err);
+    return res.status(500).json({ error: 'Internal server error' });
   }
-
-  // Block access at noon on checkout day
-  if (!isSessionActive(session.checkOutDate)) {
-    return res.status(403).json({ error: 'session_expired', message: 'Your chat session has ended. Thank you for staying with us! We hope to see you again soon. 🙏' });
-  }
-
-  req.guestSession = session;
-  next();
 };
 
 // Start or get conversation
@@ -1201,7 +1206,7 @@ export async function processGuestMessage(
   const lang: string = session.preferredLanguage || 'en';
   const lower = content.toLowerCase().trim();
   const hotelId = session.hotelId;
-  const roomNumber = session.room.roomNumber;
+  const roomNumber = session.room?.roomNumber ?? 'unknown';
 
   // ── 0. Load persisted flow state from DB (single fetch, replaces all in-memory Maps) ──
   const flowStateRecord = (conversation.flowState && typeof conversation.flowState === 'object')
@@ -1384,16 +1389,6 @@ export async function processGuestMessage(
 
       const request = await createServiceRequest(hotelId, session, pendingBooking.serviceType, true, details);
 
-      await prisma.notification.create({
-        data: {
-          hotelId,
-          type: 'new_request',
-          title: `${pendingBooking.amenityLabel} Booking — Room ${roomNumber}`,
-          body: `${session.guestName}: ${details}`,
-          relatedEntityType: 'serviceRequest',
-          relatedEntityId: request.id,
-        },
-      });
       emitToHotel(hotelId, 'new_request', { roomNumber, type: pendingBooking.serviceType });
 
       const amenityBookedVars = { emoji: pendingBooking.emoji, amenity: pendingBooking.amenityLabel, day: dayLabel, date: dateStr, start: hourSlot, end: endKey };
@@ -1755,17 +1750,22 @@ const verifyGuestTokenAny = async (req: any, res: Response, next: any) => {
   const token = req.headers['x-guest-token'];
   if (!token) return res.status(401).json({ error: 'No guest token' });
 
-  const session = await prisma.guestSession.findUnique({
-    where: { token: token as string },
-    include: { room: true, hotel: true },
-  });
+  try {
+    const session = await prisma.guestSession.findUnique({
+      where: { token: token as string },
+      include: { room: true, hotel: true },
+    });
 
-  if (!session || !session.otpVerified) {
-    return res.status(401).json({ error: 'Invalid guest session' });
+    if (!session || !session.otpVerified) {
+      return res.status(401).json({ error: 'Invalid guest session' });
+    }
+
+    req.guestSession = session;
+    next();
+  } catch (err) {
+    console.error('[verifyGuestTokenAny]', err);
+    return res.status(500).json({ error: 'Internal server error' });
   }
-
-  req.guestSession = session;
-  next();
 };
 
 router.post('/feedback', verifyGuestTokenAny, async (req: any, res: Response) => {
@@ -1805,8 +1805,6 @@ router.post('/feedback', verifyGuestTokenAny, async (req: any, res: Response) =>
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
-
-export default router;
 
 // Per-room QR session — no OTP needed
 router.post('/room-session', async (req: Request, res: Response) => {
@@ -1873,3 +1871,5 @@ router.post('/room-session', async (req: Request, res: Response) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+export default router;
