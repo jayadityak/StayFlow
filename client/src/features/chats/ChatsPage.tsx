@@ -231,7 +231,12 @@ export default function ChatsPage() {
     setLoadingSuggest(true)
     try {
       const res = await api.post<{ suggestions: string[] }>(`/chats/${selectedId}/suggest`, {})
-      setSuggestions(res.suggestions || [])
+      const list = res.suggestions || []
+      if (list.length === 0) {
+        toast('No suggestions — try again once there are more messages', 'error')
+      } else {
+        setSuggestions(list)
+      }
     } catch {
       toast('AI suggest failed', 'error')
     } finally {

@@ -3,7 +3,7 @@ import twilio from 'twilio';
 import prisma from '../lib/prisma';
 import { emitToHotel } from '../lib/sse';
 import { processGuestMessage } from './guest';
-import { translateToEnglish } from '../lib/translation';
+import { translateToEnglish, detectLanguage } from '../lib/translation';
 import { authenticate, AuthRequest } from '../middleware/auth';
 
 const router = Router();
@@ -81,8 +81,20 @@ async function processInbound(from: string, body: string) {
       console.log(`[whatsapp] existing conversation=${conversation.id}`);
     }
 
-    // Translate to English for storage
-    const lang = session.preferredLanguage || 'en';
+    // Detect the language of this message and update the session if it changed
+    const detectedLang = await detectLanguage(body);
+    const SUPPORTED = ['en', 'hi', 'ar', 'zh', 'fr', 'de', 'es', 'ru', 'ja', 'ko', 'pt', 'it'];
+    const lang = SUPPORTED.includes(detectedLang) ? detectedLang : (session.preferredLanguage || 'en');
+
+    if (lang !== session.preferredLanguage) {
+      await prisma.guestSession.update({
+        where: { id: session.id },
+        data: { preferredLanguage: lang },
+      });
+      session.preferredLanguage = lang;
+      console.log(`[whatsapp] language updated to '${lang}' for guest ${session.guestName}`);
+    }
+
     const englishContent = await translateToEnglish(body, lang);
 
     // Store guest message

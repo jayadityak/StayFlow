@@ -59,7 +59,12 @@ export async function suggestStaffReplies(
 
     const block = response.content[0];
     if (block.type !== 'text') return [];
-    const suggestions = JSON.parse(block.text.trim());
+    // Strip markdown code fences if Claude wraps the JSON
+    const text = block.text.trim()
+      .replace(/^```(?:json)?\n?/, '')
+      .replace(/\n?```$/, '')
+      .trim();
+    const suggestions = JSON.parse(text);
     return Array.isArray(suggestions) ? suggestions.slice(0, 3) : [];
   } catch (err) {
     console.error('[llm] suggestStaffReplies failed:', err);

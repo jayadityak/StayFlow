@@ -40,6 +40,28 @@ async function googleTranslate(text: string, source: string, target: string): Pr
   }
 }
 
+// Detect the language of a text using Google Translate's detection API.
+// Returns a BCP-47-ish code like 'hi', 'ar', 'zh', etc. Falls back to 'en' on failure.
+export async function detectLanguage(text: string): Promise<string> {
+  const apiKey = process.env.GOOGLE_TRANSLATE_API_KEY;
+  if (!apiKey) return 'en';
+  try {
+    const res = await fetch(
+      `https://translation.googleapis.com/language/translate/v2/detect?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: text }),
+      },
+    );
+    if (!res.ok) return 'en';
+    const data: any = await res.json();
+    return data.data?.detections?.[0]?.[0]?.language ?? 'en';
+  } catch {
+    return 'en';
+  }
+}
+
 export async function translateToEnglish(text: string, sourceLang: string): Promise<string> {
   if (!sourceLang || sourceLang === 'en') return text;
   return googleTranslate(text, sourceLang, 'en');
